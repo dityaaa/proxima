@@ -1,9 +1,9 @@
 # Proxima 7
-One of the reasons this reverse proxy is made is because I need to modify client request and
+One of the reasons this reverse proxy is made because I need to modify client request and
 response from the server. Feel free to contribute 😉
 
 ## Usage
-Simple example how to use Proxima 7
+Using Proxima 7 is as simple as this:
 ```go
 package main
 
@@ -13,15 +13,12 @@ import (
 )
 
 func main() {
-    proxy := &proxima.Server{
-        Target: "http://example.com",
-    }
+    proxy := proxima.New("http://example.com/")
 
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         proxy.HandleRequests(w, r)
     })
 	
-    proxy.StartProxima()
     http.ListenAndServe(":80", nil)
 }
 ```

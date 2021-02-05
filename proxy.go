@@ -8,9 +8,6 @@ import (
 )
 
 type Server struct {
-	// Target url, for example: https://www.google.com
-	Target string
-
 	targetURL         *url.URL
 	requestListeners  []func(req *http.Request)
 	responseListeners []func(res *http.Response)
@@ -23,6 +20,10 @@ func (s *Server) OnRequest(callback func(req *http.Request)) {
 
 func (s *Server) OnResponse(callback func(res *http.Response)) {
 	s.responseListeners = append(s.responseListeners, callback)
+}
+
+func (s *Server) HandleRequests(w http.ResponseWriter, r *http.Request) {
+	s.reverseProxy.ServeHTTP(w, r)
 }
 
 func (s *Server) director(req *http.Request) {
@@ -72,19 +73,18 @@ func (s *Server) modifyResponse(res *http.Response) (err error) {
 	return nil
 }
 
-func (s *Server) HandleRequests(w http.ResponseWriter, r *http.Request) {
-	s.reverseProxy.ServeHTTP(w, r)
-}
+// Initialize new Proxima 7
+func New(target string) (server *Server, err error) {
+	server = new(Server)
 
-func (s *Server) StartProxima() (err error) {
-	if s.targetURL, err = url.Parse(s.Target); err != nil {
-		return err
+	if server.targetURL, err = url.Parse(target); err != nil {
+		return nil, err
 	}
 
-	s.reverseProxy = &httputil.ReverseProxy{
-		Director:       s.director,
-		ModifyResponse: s.modifyResponse,
+	server.reverseProxy = &httputil.ReverseProxy{
+		Director:       server.director,
+		ModifyResponse: server.modifyResponse,
 	}
 
-	return nil
+	return server, nil
 }
