@@ -14,11 +14,7 @@ import (
 
 func main() {
     proxy := proxima.New("http://example.com/")
-
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        proxy.HandleRequests(w, r)
-    })
-	
+    http.HandleFunc("/", proxy.HandleRequests)
     http.ListenAndServe(":80", nil)
 }
 ```
